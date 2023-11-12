@@ -26,6 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test]
     steps:
+      # Check out the code from the repository.
+      - uses: actions/checkout@v3
       # Send a console message at completion.
       - run: npm run build
       - name: Configure AWS credentials
