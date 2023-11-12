@@ -30,7 +30,7 @@ jobs:
     steps:
       # Run the test.
       - run: npm test
-  build:
+  build-npm:
     runs-on: ubuntu-latest
     needs: [lint, test]
       # Send a console message at completion.
