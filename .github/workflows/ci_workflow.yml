@@ -9,7 +9,6 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
-    needs: [install-dependancy]
     steps:
       # Check out the code from the repository.
       - uses: actions/checkout@v3
@@ -24,7 +23,6 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    needs: [install-dependancy]
     steps:
       # Check out the code from the repository.
       - uses: actions/checkout@v3
