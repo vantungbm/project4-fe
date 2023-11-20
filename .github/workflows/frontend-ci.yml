@@ -1,4 +1,4 @@
-name: ci-workflow
+name: frontend-ci
 
 on:
   workflow_dispatch:
