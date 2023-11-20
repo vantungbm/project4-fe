@@ -37,25 +37,38 @@ jobs:
       - run: npm ci
       # Send a console message at completion.
       - run: npm run build
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: us-east-1 # Replace with your desired AWS region
-      - name: Login-ecr
+          aws-region: ${{ vars.AWS_DEFAULT_REGION }}
+
+      - name: ECR Login
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ${{ vars.AWS_DEFAULT_REGION }}
+
+      - name: Build Docker image
         run: |
-          echo Logging into ECR
-          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
-      - name: Build image
+          docker build -t frontend --build-arg=REACT_APP_MOVIE_API_URL=${{ vars.REACT_APP_MOVIE_API_URL }} .
+      
+      - name: Tag Docker Image
         run: |
-          echo Starting build at $(date)
-          echo Building the Docker image...          
-          docker build -t frontend:0.1.1 .
-          docker tag frontend:0.1.1 ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/frontend:0.1.1      
-      - name: Post build
+          docker tag frontend:latest ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
+
+      - name: Push Docker image to ECR
         run: |
-          echo Completed build at $(date)
-          echo Pushing the Docker image...
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/frontend:0.1.1
+          docker push ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
+      
+      - name: Kubeconfig Login
+        run: |
+          aws eks update-kubeconfig --name cluster --region ${{ vars.AWS_DEFAULT_REGION }}
+      
+      - name: Deploy to Kubernetes
+        run: |
+          cd ./k8s
+          kustomize edit set image frontend=${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/frontend:latest
+          kustomize build | kubectl apply -f -
