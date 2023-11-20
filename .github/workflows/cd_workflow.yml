@@ -43,6 +43,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_DEFAULT_REGION }}
+          output-credentials: true
       - name: Test login AWS
         run: aws ec2 describe-instances --region us-west-1
       - name: ECR Login
