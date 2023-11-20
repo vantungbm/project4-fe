@@ -16,6 +16,14 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '18.x'
+
+      - name: Cache dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+
       # Install the dependencies.
       - run: npm ci
       # Run the linter.
@@ -30,6 +38,13 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '18.x'
+
+      - name: Cache dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
 
       # Install the dependencies.
       - run: npm ci
